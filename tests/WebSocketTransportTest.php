@@ -87,10 +87,11 @@ it('redacts WebSocket query credentials from transport context', function () {
         (new WebSocketTransport(connector: $connector))->connect(new WebSocketEndpoint(
             'wss://example.test/live?key=super-secret&model=voice',
         ));
-        $this->fail('Expected the WebSocket connection to fail.');
+
+        throw new LogicException('Expected the WebSocket connection to fail.');
     } catch (TransportException $exception) {
-        expect($exception->context()['endpoint'] ?? null)->toBe('wss://example.test/live')
-            ->and(json_encode($exception->context()))->not->toContain('super-secret');
+        expect($exception->context()['endpoint'] ?? null)->toBe('wss://example.test/live');
+        expect(str_contains((string) json_encode($exception->context()), 'super-secret'))->toBeFalse();
     }
 });
 
@@ -98,7 +99,10 @@ it('exchanges text and binary messages with a local WebSocket server', function 
     $server = listen('127.0.0.1:0');
     $serverTask = async(function () use ($server): array {
         $socket = $server->accept();
-        expect($socket)->not->toBeNull();
+        if ($socket === null) {
+            throw new LogicException('Expected the local WebSocket server to accept a connection.');
+        }
+
         $reader = new BufferedReader($socket);
         $request = $reader->readUntil("\r\n\r\n", limit: 16_384);
         preg_match('/^Sec-WebSocket-Key:\s*(.+)$/mi', $request, $matches);
@@ -150,7 +154,10 @@ it('enforces the configured WebSocket message limit', function () {
     $server = listen('127.0.0.1:0');
     $serverTask = async(function () use ($server): void {
         $socket = $server->accept();
-        expect($socket)->not->toBeNull();
+        if ($socket === null) {
+            throw new LogicException('Expected the local WebSocket server to accept a connection.');
+        }
+
         $reader = new BufferedReader($socket);
         $request = $reader->readUntil("\r\n\r\n", limit: 16_384);
         preg_match('/^Sec-WebSocket-Key:\s*(.+)$/mi', $request, $matches);

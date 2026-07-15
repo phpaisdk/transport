@@ -20,6 +20,7 @@ final class FakeHttp2Client implements DelegateHttpClient
 
     public string $firstBodyChunk = '';
 
+    /** @param '1.0'|'1.1'|'2' $protocol */
     public function __construct(
         private readonly string $protocol = '2',
         private readonly int $status = 200,
@@ -80,9 +81,14 @@ it('writes and reads a full-duplex HTTP/2 stream without waiting for response he
     $connection->send(TransportFrame::binary('client-chunk'));
     $incoming = $connection->receive();
 
-    expect($client->request)->toBeInstanceOf(Request::class)
-        ->and($client->request->getProtocolVersions())->toBe(['2'])
-        ->and($client->request->getHeader('content-type'))->toBe('application/octet-stream')
+    $request = $client->request;
+    if (! $request instanceof Request) {
+        throw new LogicException('Expected the HTTP/2 client to receive a request.');
+    }
+
+    expect($request)->toBeInstanceOf(Request::class)
+        ->and($request->getProtocolVersions())->toBe(['2'])
+        ->and($request->getHeader('content-type'))->toBe('application/octet-stream')
         ->and($client->firstBodyChunk)->toBe('client-chunk')
         ->and($incoming?->payload)->toBe('server-chunk');
 
@@ -123,7 +129,8 @@ it('surfaces non-success HTTP responses with bounded response details', function
 
     try {
         $connection->receive();
-        $this->fail('Expected the HTTP/2 response to fail.');
+
+        throw new LogicException('Expected the HTTP/2 response to fail.');
     } catch (TransportException $exception) {
         expect($exception->context())->toMatchArray([
             'status' => 429,
@@ -141,7 +148,8 @@ it('truncates oversized HTTP error bodies without losing status context', functi
 
     try {
         $connection->receive();
-        $this->fail('Expected the HTTP/2 response to fail.');
+
+        throw new LogicException('Expected the HTTP/2 response to fail.');
     } catch (TransportException $exception) {
         expect($exception->context())->toBe([
             'status' => 429,
