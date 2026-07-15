@@ -27,4 +27,4 @@ jobs:
       - run: composer lint
       - run: composer analyze
       - run: vendor/bin/pest
-      - run: composer audit
+      - run: composer audit --ignore-unreachable
