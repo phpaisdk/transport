@@ -1,0 +1,62 @@
+{
+    "name": "aisdk/transport",
+    "description": "Ready-made Live transport implementations for the PHP AI SDK.",
+    "license": "MIT",
+    "keywords": [
+        "ai",
+        "aisdk",
+        "http2",
+        "realtime",
+        "websocket"
+    ],
+    "homepage": "https://github.com/phpaisdk/transport",
+    "support": {
+        "issues": "https://github.com/phpaisdk/transport/issues",
+        "source": "https://github.com/phpaisdk/transport"
+    },
+    "require": {
+        "php": "^8.3",
+        "aisdk/core": "^0.8.0",
+        "amphp/amp": "^3.0",
+        "amphp/byte-stream": "^2.0",
+        "amphp/http-client": "^5.0",
+        "amphp/websocket-client": "^2.0"
+    },
+    "require-dev": {
+        "amphp/socket": "^2.0",
+        "laravel/pint": "^1.18",
+        "pestphp/pest": "^3.0 || ^4.0",
+        "phpstan/phpstan": "^2.0",
+        "rector/rector": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AiSdk\\": "src/Root/",
+            "AiSdk\\Transport\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AiSdk\\Transport\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "lint": "vendor/bin/pint --test",
+        "format": "vendor/bin/pint",
+        "analyze": "vendor/bin/phpstan analyze --memory-limit=512M",
+        "refactor:dry": "vendor/bin/rector process --dry-run",
+        "refactor": "vendor/bin/rector process",
+        "test": "vendor/bin/pest",
+        "test:all": [
+            "@lint",
+            "@analyze",
+            "@test"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
