@@ -122,8 +122,13 @@ requirement of `AiSdk\Live`.
 composer test
 ```
 
-## Links
+## Documentation
 
-- [Core package](https://github.com/phpaisdk/core)
-- [OpenAI provider](https://github.com/phpaisdk/openai)
-- [Amazon Bedrock provider](https://github.com/phpaisdk/bedrock)
+- [PHP AI SDK documentation](https://phpaisdk.com/docs)
+- [Transport documentation](https://phpaisdk.com/docs/live/transports)
+
+## Community
+
+- [Contributing](https://github.com/phpaisdk/.github/blob/main/CONTRIBUTING.md)
+- [Support](https://github.com/phpaisdk/.github/blob/main/SUPPORT.md)
+- For private security reports, email [security@phpaisdk.com](mailto:security@phpaisdk.com).
