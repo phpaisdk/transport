@@ -39,8 +39,25 @@ final readonly class WebSocketConnection implements TransportConnectionInterface
         try {
             $message = $this->socket->receive();
             if ($message === null) {
-                if ($this->socket->getCloseInfo()->getCode() === WebsocketCloseCode::MESSAGE_TOO_LARGE) {
+                $close = $this->socket->getCloseInfo();
+                if ($close->getCode() === WebsocketCloseCode::MESSAGE_TOO_LARGE) {
                     throw new TransportException('A WebSocket message exceeded the configured byte limit.');
+                }
+
+                if (! WebsocketCloseCode::isExpected($close->getCode())) {
+                    throw new TransportException(
+                        "WebSocket closed unexpectedly with code {$close->getCode()}: {$close->getReason()}",
+                        [
+                            'closeCode' => $close->getCode(),
+                            'closeReason' => $close->getReason(),
+                            'closedByPeer' => $close->isByPeer(),
+                            'retryable' => in_array($close->getCode(), [
+                                WebsocketCloseCode::SERVICE_RESTARTING,
+                                WebsocketCloseCode::TRY_AGAIN_LATER,
+                                WebsocketCloseCode::BAD_GATEWAY,
+                            ], true),
+                        ],
+                    );
                 }
 
                 return null;

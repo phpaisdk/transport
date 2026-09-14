@@ -184,3 +184,45 @@ it('enforces the configured WebSocket message limit', function () {
         $server->close();
     }
 })->throws(TransportException::class, 'exceeded the configured byte limit');
+
+it('preserves abnormal WebSocket close details', function () {
+    $server = listen('127.0.0.1:0');
+    $serverTask = async(function () use ($server): void {
+        $socket = $server->accept();
+        if ($socket === null) {
+            throw new LogicException('Expected the local WebSocket server to accept a connection.');
+        }
+
+        $reader = new BufferedReader($socket);
+        $request = $reader->readUntil("\r\n\r\n", limit: 16_384);
+        preg_match('/^Sec-WebSocket-Key:\s*(.+)$/mi', $request, $matches);
+        $accept = base64_encode(sha1(trim($matches[1] ?? '') . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
+        $socket->write(
+            "HTTP/1.1 101 Switching Protocols\r\n"
+            . "Upgrade: websocket\r\n"
+            . "Connection: Upgrade\r\n"
+            . "Sec-WebSocket-Accept: {$accept}\r\n\r\n",
+        );
+        $socket->write(serverWebSocketFrame(8, pack('n', 1013) . 'busy'));
+        delay(0.05);
+        $socket->close();
+    });
+
+    try {
+        $connection = (new WebSocketTransport())
+            ->connect(new WebSocketEndpoint('ws://' . $server->getAddress() . '/live'));
+
+        $connection->receive();
+    } catch (TransportException $exception) {
+        expect($exception->context())->toMatchArray([
+            'closeCode' => 1013,
+            'closeReason' => 'busy',
+            'retryable' => true,
+        ]);
+
+        throw $exception;
+    } finally {
+        $serverTask->await();
+        $server->close();
+    }
+})->throws(TransportException::class, 'code 1013');
