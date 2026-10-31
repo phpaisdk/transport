@@ -2,6 +2,10 @@
 
 Notable changes to `aisdk/transport`. Release notes are also published at https://github.com/phpaisdk/transport/releases.
 
+## v0.11.0 — 2026-10-31
+
+- Requires `aisdk/core ^0.11.0`. Upgrade SDK packages together; no other changes in this package.
+
 ## v0.10.0 — 2026-10-29
 
 ### What's new
