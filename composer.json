@@ -25,7 +25,7 @@
     "require-dev": {
         "amphp/socket": "^2.0",
         "laravel/pint": "^1.18",
-        "pestphp/pest": "^3.0 || ^4.0",
+        "pestphp/pest": "^5.3.5",
         "phpstan/phpstan": "^2.0",
         "rector/rector": "^2.0"
     },
